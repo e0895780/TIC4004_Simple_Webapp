@@ -1,0 +1,17 @@
+<h1>Sign Up</h1>
+<% if (typeof error !== 'undefined' && error) { %>
+    <p class="error"><%= error %></p>
+<% } %>
+<form method="post" action="/signup">
+    <label>Email
+        <input type="email" name="email" required />
+    </label>
+    <label>Password
+        <input type="password" name="password" required minlength="6" />
+    </label>
+    <button type="submit">Create Account</button>
+</form>
+<p>Already have an account? <a href="/login">Log in</a></p>
+
+
+
