@@ -31,7 +31,7 @@ router.post('/signup', ensureGuest, (req, res) => {
 				return res.status(400).render('signup', { error: message });
 			}
 			req.session.user = { id: this.lastID, email };
-			res.redirect('/');
+			res.redirect('/form?signup=1');
 		}
 	);
 });
@@ -49,19 +49,43 @@ router.post('/login', ensureGuest, (req, res) => {
 		const ok = bcrypt.compareSync(password, user.password_hash);
 		if (!ok) return res.status(400).render('login', { error: 'Invalid credentials' });
 		req.session.user = { id: user.id, email: user.email };
-		res.redirect('/');
+		res.redirect('/form');
 	});
 });
 
 router.post('/logout', ensureAuth, (req, res) => {
 	req.session.destroy(() => {
 		res.clearCookie('connect.sid');
-		res.redirect('/thank-you');
+		res.redirect('/login');
 	});
 });
 
-router.get('/thank-you', (req, res) => {
-	res.render('thankyou');
+// New add in for Form submission page (protected)
+router.get('/form', ensureAuth, (req, res) => {
+    res.render('form');
+});
+
+// New add in for Handle form submission and persist to DB
+router.post('/form', ensureAuth, (req, res) => {
+    const { name, email, phone, country, gender, qualification } = req.body;
+    if (!name || !email || !phone || !country || !gender || !qualification) {
+        return res.status(400).render('form', { error: 'All fields are required' });
+    }
+    db.run(
+        'INSERT INTO submissions (name, email, phone, country, gender, qualification, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [name, email, phone, country, gender, qualification, req.session.user.id],
+        function (err) {
+            if (err) {
+                return res.status(500).render('form', { error: 'Could not save submission' });
+            }
+            res.redirect('/thank-you');
+        }
+    );
+});
+
+// New add in forThank you page after successful form submission
+router.get('/thank-you', ensureAuth, (req, res) => {
+    res.render('thankyou');
 });
 
 module.exports = router;
