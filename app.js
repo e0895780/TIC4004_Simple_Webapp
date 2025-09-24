@@ -36,8 +36,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.get('/', (req, res) => {
-	if (req.session.user) return res.redirect('/form');
-	res.render('index');
+    res.render('index');
 });
 
 app.use('/', authRouter);

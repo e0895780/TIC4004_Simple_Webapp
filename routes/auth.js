@@ -30,8 +30,8 @@ router.post('/signup', ensureGuest, (req, res) => {
 				const message = err.code === 'SQLITE_CONSTRAINT' ? 'Email already registered' : 'Something went wrong';
 				return res.status(400).render('signup', { error: message });
 			}
-			req.session.user = { id: this.lastID, email };
-			res.redirect('/form?signup=1');
+            req.session.user = { id: this.lastID, email };
+            res.redirect('/');
 		}
 	);
 });
@@ -48,8 +48,8 @@ router.post('/login', ensureGuest, (req, res) => {
 		if (!user) return res.status(400).render('login', { error: 'Invalid credentials' });
 		const ok = bcrypt.compareSync(password, user.password_hash);
 		if (!ok) return res.status(400).render('login', { error: 'Invalid credentials' });
-		req.session.user = { id: user.id, email: user.email };
-		res.redirect('/form');
+        req.session.user = { id: user.id, email: user.email };
+        res.redirect('/');
 	});
 });
 
@@ -61,19 +61,19 @@ router.post('/logout', ensureAuth, (req, res) => {
 });
 
 // New add in for Form submission page (protected)
-router.get('/form', ensureAuth, (req, res) => {
+router.get('/form', (req, res) => {
     res.render('form');
 });
 
 // New add in for Handle form submission and persist to DB
-router.post('/form', ensureAuth, (req, res) => {
+router.post('/form', (req, res) => {
     const { name, email, phone, country, gender, qualification } = req.body;
     if (!name || !email || !phone || !country || !gender || !qualification) {
         return res.status(400).render('form', { error: 'All fields are required' });
     }
     db.run(
         'INSERT INTO submissions (name, email, phone, country, gender, qualification, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [name, email, phone, country, gender, qualification, req.session.user.id],
+        [name, email, phone, country, gender, qualification, req.session.user ? req.session.user.id : null],
         function (err) {
             if (err) {
                 return res.status(500).render('form', { error: 'Could not save submission' });
@@ -84,7 +84,7 @@ router.post('/form', ensureAuth, (req, res) => {
 });
 
 // New add in forThank you page after successful form submission
-router.get('/thank-you', ensureAuth, (req, res) => {
+router.get('/thank-you', (req, res) => {
     res.render('thankyou');
 });
 
