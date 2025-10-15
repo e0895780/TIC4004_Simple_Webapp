@@ -43,4 +43,4 @@ npm start
 - Example: docker run -d -p 3000:3000 --name tic4303-3pagewebapp e089xxxxx/tic4303-3pagewebapp
 
 ## Try to access the webapplication using local host link
-- http://localhost:3000/
+- http://localhost:3000
