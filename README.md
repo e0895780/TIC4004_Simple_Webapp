@@ -44,3 +44,47 @@ npm start
 
 ## Try to access the webapplication using local host link
 - http://localhost:3000
+
+## Kubernetes Deployment
+
+### Prerequisites
+- Install **kubectl** CLI: [Install kubectl](https://kubernetes.io/docs/tasks/tools/)
+- Install a local Kubernetes cluster (Docker Desktop)
+- Ensure your Docker image is available locally or in a registry accessible to Kubernetes
+
+### Apply Deployment & Service
+1. Make sure `webapp.yaml` exists (contains Deployment and Service)
+2. Run: kubectl apply -f webapp.yaml
+
+
+### Verify Deployment
+kubectl get pods -n tic4303-dev
+kubectl get svc -n tic4303-dev
+
+
+- NodePort service will expose the app.  
+- Access it in browser via: http://localhost:30080
+
+
+---
+
+## Notes
+- PodSecurity is enabled in the namespace; your deployment uses securityContext for baseline compliance.
+- Logs can be checked using: kubectl logs <pod-name> -n tic4303-dev
+
+## Kubernetes Security Testing (Audit / Restricted Policy)
+
+### Trigger a PodSecurity Audit
+You can create a pod that intentionally violates the **restricted** policy to see audit warnings.
+
+1. Apply the violation YAML: kubectl apply -f restricted-violation.yaml
+
+2. Expected behavior:
+- The pod will still be created (baseline is enforced).
+- You will see warnings in your terminal like: Warning: would violate PodSecurity "restricted:latest": allowPrivilegeEscalation != false (container "test-container" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container "test-container" must set securityContext.capabilities.drop=["ALL"]), runAsNonRoot != true (pod or container "test-container" must set securityContext.runAsNonRoot=true), runAsUser=0 (container "test-container" must not set runAsUser=0), seccompProfile (pod or container "test-container" must set securityContext.seccompProfile.type to "RuntimeDefault" or "Localhost")
+
+Clean up
+After testing, you can delete the violating pod: kubectl delete pod restricted-violation-test -n tic4303-dev
+
+
+
