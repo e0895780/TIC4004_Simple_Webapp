@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: restricted-violation-test
+  namespace: tic4303-dev
+  labels:
+    app: restricted-violation-test
+spec:
+  containers:
+  - name: test-container
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+    securityContext:
+      # Violation 1: allowPrivilegeEscalation should be false under restricted
+      allowPrivilegeEscalation: true
+      # Violation 2: container running as root (restricted requires runAsNonRoot: true)
+      runAsUser: 0
+      # Violation 3: seccompProfile not explicitly set to RuntimeDefault (restricted recommends)
+      # intentionally omitted to trigger warning

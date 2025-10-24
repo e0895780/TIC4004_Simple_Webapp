@@ -1,0 +1,57 @@
+# 1. Kubernetes Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tic4303-webapp
+  namespace: tic4303-dev
+  labels:
+    app: tic4303-webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tic4303-webapp
+  template:
+    metadata:
+      labels:
+        app: tic4303-webapp
+    spec:
+      # Pod-level security context
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+      - name: webapp-container
+        image: tic4303-3pagewebapp:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+        securityContext:
+          allowPrivilegeEscalation: false # Prevent privilege escalation
+          runAsNonRoot: true # Ensure container runs as non-root
+          capabilities:
+            drop: ["ALL"] # Drop all extra Linux capabilities
+          seccompProfile:
+            type: RuntimeDefault # Use default seccomp profile
+
+---
+
+# 2. Kubernetes Service (Exposes the Deployment)
+apiVersion: v1
+kind: Service
+metadata:
+  name: tic4303-service
+  namespace: tic4303-dev
+spec:
+  type: NodePort 
+  selector:
+    app: tic4303-webapp
+  ports:
+    - protocol: TCP
+      port: 80         # Service internal port
+      targetPort: 3000 # Container port
+      nodePort: 30080  # Host port (NodePort range: 30000-32767)
