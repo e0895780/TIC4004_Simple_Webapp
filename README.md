@@ -52,6 +52,21 @@ npm start
 - Install a local Kubernetes cluster (Docker Desktop)
 - Ensure your Docker image is available locally or in a registry accessible to Kubernetes
 
+###Build and Tag the Docker Image
+Ensure your Docker image is built and tagged locally.
+- docker build -t tic4303-3pagewebapp:v1 .
+
+###Create the Kubernetes Namespace
+Create a dedicated namespace for your application, which is a Kubernetes best practice for organization and isolation.
+- kubectl create namespace tic4303-dev
+
+###Apply Pod Security Admission (PSA)
+Label the namespace to enforce the recommended Baseline security standard. This ensures your app runs securely and prevents privilege escalations.
+kubectl label namespace tic4303-dev `
+  pod-security.kubernetes.io/enforce=baseline `
+  pod-security.kubernetes.io/warn=restricted `
+  pod-security.kubernetes.io/audit=restricted --overwrite
+
 ### Apply Deployment & Service
 1. Make sure `webapp.yaml` exists (contains Deployment and Service)
 2. Run: kubectl apply -f webapp.yaml
@@ -65,11 +80,10 @@ kubectl get svc -n tic4303-dev
 - NodePort service will expose the app.  
 - Access it in browser via: http://localhost:30080
 
-
 ---
 
 ## Notes
-- PodSecurity is enabled in the namespace; your deployment uses securityContext for baseline compliance.
+- PodSecurity is enabled in the namespace; the deployment uses securityContext for baseline compliance.
 - Logs can be checked using: kubectl logs <pod-name> -n tic4303-dev
 
 ## Kubernetes Security Testing (Audit / Restricted Policy)
